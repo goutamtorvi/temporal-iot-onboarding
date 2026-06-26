@@ -21,7 +21,7 @@ class DeviceOnboardingWorkflow:
         self.human_approved = False
 
     @workflow.run
-    async def run(self, device_id: str) -> str:
+    async def run(self, device_id: str, simulate_failure: bool = False) -> str:
         try:
             self.status = "Registering device"
             await workflow.execute_activity(
@@ -44,7 +44,7 @@ class DeviceOnboardingWorkflow:
                 start_to_close_timeout=timedelta(seconds=10),
             )
 
-            if result["confidence"] < 90:
+            if result["confidence"] < 60:
                 self.status = "Waiting for human approval"
                 await workflow.wait_condition(
                     lambda: self.human_approved,
@@ -59,11 +59,20 @@ class DeviceOnboardingWorkflow:
             )
 
             self.status = "Pushing OTA firmware"
-            await workflow.execute_activity(
-                push_firmware,
-                device_id,
-                start_to_close_timeout=timedelta(seconds=10),
-            )
+            try:
+            	await workflow.execute_activity(
+                	push_firmware,
+                	args=[device_id, simulate_failure],
+                	start_to_close_timeout=timedelta(seconds=10),
+            	)
+            except Exception:
+            	self.status = "Firmware update failed - rolling back"
+            	await workflow.execute_activity(
+            		rollback_device,
+            		device_id,
+            		start_to_close_timeout=timedelta(seconds=10),
+            	)
+            	raise
 
             self.status = "Verifying telemetry"
             await workflow.execute_activity(
