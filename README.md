@@ -71,13 +71,13 @@ without requiring custom orchestration code.
 
 # Running
 
-Command Line:
-
+```bash
 temporal server start-dev
 
 python worker.py
 
 python starter.py
+```
 
 Open the Temporal UI:
 
