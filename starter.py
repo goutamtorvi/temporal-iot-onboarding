@@ -8,8 +8,8 @@ async def main():
 
     result = await client.execute_workflow(
         DeviceOnboardingWorkflow.run,
-        "device-123",
-        id="device-onboarding-device-123",
+        args=["device-126", True],
+        id="device-onboarding-device-126",
         task_queue="iot-onboarding-task-queue",
     )
 
