@@ -25,8 +25,11 @@ async def configure_mqtt(device_id: str) -> str:
 
 
 @activity.defn
-async def push_firmware(device_id: str) -> str:
-    return f"Firmware pushed to {device_id}"
+async def push_firmware(device_id: str, simulate_failure: bool = False) -> str:
+    if simulate_failure:
+        raise Exception(f"Firmware update failed for {device_id}")
+
+    return f"Firmware pushed successfully to {device_id}"
 
 
 @activity.defn
